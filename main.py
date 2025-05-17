@@ -11,9 +11,19 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLa
 from PyQt5.QtGui import QImage, QPixmap, QPainter
 from PyQt5.QtCore import (Qt, QRectF)
 
+
+os.environ['QT_PLUGIN_PATH'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.venv', 'Lib', 'site-packages', 'PyQt5', 'Qt5', 'plugins')
+
 # Отключаем предупреждения OpenCV
 os.environ['OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS'] = '0'
 os.environ['OPENCV_VIDEOIO_DEBUG'] = '0'
+os.environ["OPENCV_LOG_LEVEL"] = "ERROR"
+
+# Сохраняем оригинальный stderr (на случай, если понадобится восстановить)
+original_stderr = sys.stderr
+
+# Перенаправляем stderr в "никуда"
+sys.stderr = open(os.devnull, 'w')
 
 # Константы для стилей
 BUTTON_STYLE = """
@@ -326,6 +336,7 @@ class VideoChat(QWidget):
             self.start_button.setEnabled(False)
 
     def start_call(self):
+        self.local_running = False
         if self.mode == 'client':
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             threading.Thread(target=self.connect_to_server, daemon=True).start()
